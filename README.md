@@ -13,6 +13,9 @@
 - [11. const member function](#11-const-member-function)
 - [12. pass/return by value vs. pass by reference(to const)](#12-passreturn-by-value-vs-pass-by-referenceto-const)
 - [13. class body 外的各种定义](#13-class-body-外的各种定义)
+- [14. operator overloading -1 member function](#14-operator-overloading--1-member-function)
+- [15. operator overloading -2 no member function no this point](#15-operator-overloading--2-no-member-function-no-this-point)
+  - [15.1. temp object typename()](#151-temp-object-typename)
 
 ## 1. Object Based vs. Object Oriented
 - Object Based: 面对的是单一class的设计
@@ -372,4 +375,67 @@ inline complex& __doapl(complex* ths, const complex& r){
     return* ths;
 }
 ```
+</details></div>
 
+## 14. operator overloading -1 member function
+<details><summary>操作符重载</summary><div>
+
+```cpp
+{
+    complex c1(2,1);
+    complex c2(5);
+    c2 += c1; // 操作符作用在左值上
+}
+```
+
+所有的成员函数带有一个隐藏的参数，谁调用这个函数this就指向它
+```cpp
+//标准库的写法！！！
+inline complex& //接收端//传递着无需知道接收者是以什么形式来接受
+__doapl(complex* ths, const complex& r){
+    ths->re += r.re;//我要拿complex里面的re
+    ths->im += r.im;
+    return *ths; //返回对象value//传递着
+}
+//不能把this放在参数列里写出来！！！！
+inline complex& //当使用者做连串预算时
+complex::operator += (this, const complex& r){
+    return __doapl (this, r);
+}
+```
+
+```cpp
+{
+    complex c1(2,1);
+    complex c2(5);
+    c2 += c1; // 
+    c3 += c2 += c1;
+}
+```
+</details></div>
+
+## 15. operator overloading -2 no member function no this point
+- 为了对付client的三种可能用法，需要对应开发三种函数
+- 如果返回的时local Object, 就不能用return by reference
+### 15.1. temp object typename()
+<details><summary>临时对象</summary><div>
+
+```cpp
+
+inline complex
+operator + (const complex& x, const complex& y){
+    return complex(real (x) + real （y），imag (x) + imag (y)); //typename //创建一个临时对象来放加法的结果
+}
+```
+
+```cpp
+{
+    int(7);
+    complex c1(2,1);
+    complex c2;
+    complex();//临时对象
+    complex(4,5);
+    //在这一行就结束了
+}
+```
+</details></div>
