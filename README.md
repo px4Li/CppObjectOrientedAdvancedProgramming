@@ -7,8 +7,12 @@
 - [5. class template 简介](#5-class-template-简介)
 - [6. inline 函数](#6-inline-函数)
 - [7. access level](#7-access-level)
-- [constructor（ctor,构造函数）](#constructorctor构造函数)
-- [ctor 可以有很多个-overloading](#ctor-可以有很多个-overloading)
+- [8. constructor（ctor,构造函数）](#8-constructorctor构造函数)
+- [9. ctor 可以有很多个-overloading](#9-ctor-可以有很多个-overloading)
+- [10. constructor(ctor, 构造函数)被放在private区](#10-constructorctor-构造函数被放在private区)
+- [11. const member function](#11-const-member-function)
+- [12. pass/return by value vs. pass by reference(to const)](#12-passreturn-by-value-vs-pass-by-referenceto-const)
+- [13. class body 外的各种定义](#13-class-body-外的各种定义)
 
 ## 1. Object Based vs. Object Oriented
 - Object Based: 面对的是单一class的设计
@@ -174,7 +178,7 @@ private: // 数据的东西应该放在private内
 </div>
 </details>
 
-## constructor（ctor,构造函数）
+## 8. constructor（ctor,构造函数）
 - 构造函数和类的名称相同
 - 可以有默认实参
 - 没有返回类型
@@ -213,7 +217,7 @@ private: // 数据的东西应该放在private内
 </div>
 </details>
 
-## ctor 可以有很多个-overloading
+## 9. ctor 可以有很多个-overloading
 <details><summary>函数重载</summary>
 <div>
 
@@ -246,3 +250,126 @@ private:
 ```
 </div>
 </details>
+
+## 10. constructor(ctor, 构造函数)被放在private区
+- 我不允许构造函数被外界创建对象时，把构造函数放在private区中。
+
+<details><summary>Singleton单件模式</summary><div>
+有一种需求把ctor放在private区
+
+```cpp
+class A{
+public:
+    static A& getInstance();
+    setup(){...}
+private:
+    A();
+    A(const A& rhs);
+    ...
+};
+A& A::getInstance(){
+    static A a;
+    return a;
+}
+```
+```cpp
+A::getInstance().setup();
+```
+</details></div>
+
+## 11. const member function
+<details><summary>常量成员函数</summary><div>
+
+```cpp
+class complex{
+public:
+    complex(double r = 0, double i = 0):re(r),im(i){}
+    complex& operator += (const complex&);
+    //这两个函数是要拿出来复数的实部虚部，不会改变这里面的数据
+    double real() const{ return re;} 
+    double imag() const{ return im;}
+private:
+    double re, im;
+    friend complex& __doapl(complex*, const complex&);
+};
+```
+```cpp
+{
+    complex c1(2,1);
+    cout << c1.real();
+    cout << c1.imag();
+}
+```
+```cpp
+{//const 出现在对象的前面
+    const complex c1(2,1);//表示这个对象一定不能改变
+    cout << c1.real(); //如果287行没有const，这里就会报错
+    cout << c1.imag();
+}
+```
+</details></div>
+
+## 12. pass/return by value vs. pass by reference(to const)
+- 尽量使用引用
+- 如果传过去的引用不希望被改动的化加常量
+- 传引用就像传指针那么的快
+<details><summary>参数传递，返回值传递</summary><div>
+
+```cpp
+class complex{
+public:
+    complex(double r = 0, double i = 0):re(r),im(i){}
+    complex& operator += const complex&;//return by reference, complex就是返回的类型
+    double real() const{ return re;} 
+    double imag() const{ return im;}
+
+    int func(const complex& param){
+        return param.re + param.im;
+    }
+
+private:
+    double re, im;
+    friend complex& __doapl(complex*, const complex&);   //__doapl函数声明为朋友
+}
+```
+```cpp
+ostream& operator << (ostream& os, const complex& x){
+    return os << '(' << real(x) << ',' << imag(x) << ')';
+}
+```
+- 在类之外可以访问private里的数据
+- 相同class的各个对象互为友元
+```cpp
+inline complex& __doapl(complex* ths, const complex& r){
+    ths->re += r.re;//我要拿complex里面的re
+    ths->im += r.im;
+    return* ths;
+}
+```
+```cpp
+{
+     complex c1(2,1);//表示这个对象一定不能改变
+     complex c2;
+
+     c2.func(c1);//第二个对象的func函数处理第一个对象
+}
+```
+</details></div>
+
+- 数据一定放在private里
+- 参数尽可能用引用传递，看状况加const
+- 返回值也尽量用引用传递
+- 在类的本体中的变量尽量加const
+- 尽量使用构造函数的初始化列表
+
+## 13. class body 外的各种定义
+<details><summary>__doapl(do assignment plus)</summary><div>
+
+```cpp
+inline complex& __doapl(complex* ths, const complex& r){
+    ths->re += r.re;//我要拿complex里面的re
+    ths->im += r.im;
+    return* ths;
+}
+```
+
