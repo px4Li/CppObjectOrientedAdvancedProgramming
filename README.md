@@ -16,6 +16,7 @@
 - [14. operator overloading -1 member function](#14-operator-overloading--1-member-function)
 - [15. operator overloading -2 no member function no this point](#15-operator-overloading--2-no-member-function-no-this-point)
   - [15.1. temp object typename()](#151-temp-object-typename)
+- [16. 复习](#16-复习)
 
 ## 1. Object Based vs. Object Oriented
 - Object Based: 面对的是单一class的设计
@@ -436,6 +437,58 @@ operator + (const complex& x, const complex& y){
     complex();//临时对象
     complex(4,5);
     //在这一行就结束了
+}
+```
+</details></div>
+
+## 16. 复习
+<details><summary>complex.h</summary><div>
+
+```cpp
+#ifndef __COMPLEX__
+#define __COMPLEX__
+
+class complex{
+public:
+    complex(double& r = 0, double& i = 0):re(r),im(i){}
+    complex& operator += (const complex&);
+    complex& operator << (ostream&, const complex&);
+    double real() const {return re;}
+    double imag() const {return im;}
+private:
+    double re, im;
+    friend complex& __doaple(complex*, const complex&);
+};
+#endif
+```
+</details></div>
+
+<details><summary>complex.cpp</summary><div>
+
+```cpp
+inline complex& __doapl(complex* ths, const complex& r){
+    ths->re += r.im;
+    ths->im += r.im;
+    return *ths;
+} 
+inline complex& complex::operator += (const complex& r){
+    return __doapl(this, r);
+}
+
+inline complex operator + (const complex& x, const complex& y){
+    return complex(real (x) + real（y），imag (x) + imag (y));
+}
+
+inline complex operator + (const complex& x, double y){
+    return complex(real (x) + y，imag (x));
+}
+
+inline complex operator + (double x, const complex& y){
+    return complex(x + real （y），imag (y));
+}
+
+inline complex& complex::operator << (ostream& os, const complex& x){
+    return os << "(" << real(x) << "," << imag(x)<< ")";
 }
 ```
 </details></div>
