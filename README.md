@@ -17,6 +17,12 @@
 - [15. operator overloading -2 no member function no this point](#15-operator-overloading--2-no-member-function-no-this-point)
   - [15.1. temp object typename()](#151-temp-object-typename)
 - [16. 复习](#16-复习)
+- [Classes 的两个经典分类](#classes-的两个经典分类)
+  - [String class](#string-class)
+  - [Big Tree](#big-tree)
+  - [ctor和dtor](#ctor和dtor)
+  - [copy construct](#copy-construct)
+  - [copy assignment operator](#copy-assignment-operator)
 
 ## 1. Object Based vs. Object Oriented
 - Object Based: 面对的是单一class的设计
@@ -489,6 +495,114 @@ inline complex operator + (double x, const complex& y){
 
 inline complex& complex::operator << (ostream& os, const complex& x){
     return os << "(" << real(x) << "," << imag(x)<< ")";
+}
+```
+</details></div>
+
+## Classes 的两个经典分类
+- Class without pointer members
+- Class with pointer members
+
+### String class
+
+<details><summary>string.h</summary><div>
+
+```cpp
+#ifndef __MYSTRING__
+#define __MYSTRING__
+
+class String{
+
+};
+String::function()
+Global-function()
+#endif
+```
+</details></div>
+<details><summary>string-test.cpp</summary><div>
+
+```cpp
+int main(){
+    String s1();
+    String s2("Hello);
+    String s3{s1}; //拷贝构造！！！
+    cout << s3 << endl;
+    s3 = s2; //拷贝赋值！！！
+    cout << s3 << endl;
+}
+```
+</details></div>
+
+### Big Tree
+<details><summary>三个特殊函数</summary><div>
+class带指针，就本能用默认的拷贝构造函数，应该自己写拷贝构造函数，拷贝赋值函数，析构函数。
+
+class with pointer 多半要用动态内存分配。
+在未定义构造函数时，系统会调用默认的拷贝函数，这个就叫浅拷贝。当数据成员中没有指针，浅拷贝是可行的；如果有指针，则会指向同一地址，当对象结束时，会调用两次析构函数，从而导致指针悬挂。
+
+```cpp
+class String{
+public:
+    String(const char* cstr{});//构造函数
+    String(const String& str);//拷贝构造
+    String& operator = (const String& str);//拷贝赋值
+    ~String();//析构函数
+    char* get_c_str() const{return m_data}
+private:
+    char* m_data;
+}
+```
+</details></div>
+
+### ctor和dtor
+<details><summary>构造函数和析构函数</summary><div>
+
+```cpp
+inline String::String(const char* cstr{}){//深拷贝
+    if(cstr){
+        m_data = new char[strlen(cstr)+1]; 
+        strcpy(m_data, cstr);
+    }
+    else{
+        m_data = new char[1];
+        *m_data = '\0';
+    }
+}
+inline String::~String(){
+    delete[] m_data;
+}
+```
+</details></div>
+
+### copy construct
+<details><summary>深拷贝</summary><div>
+
+```cpp
+inline String::String(const String& str){
+    m_data = new char[strlen(str.m_data) + 1];
+    strcpy(m_data, str.m_data);
+}
+```
+```cpp
+{
+    String s1{"Hello"};
+    String s2(s1);
+}
+```
+</details></div>
+
+### copy assignment operator
+<details><summary>拷贝赋值函数</summary><div>
+
+```cpp
+inline String& String::operator = (const String& str){
+    if(this == &str) //检查这两个指针是否指向同一个地方
+        return *this; //检测自我赋值
+    
+    delete[] m_data;
+    m_data=new char[strlen(str.m_data)+1];
+    strcpy(m_data, str.m_data);
+    return *this;
 }
 ```
 </details></div>
