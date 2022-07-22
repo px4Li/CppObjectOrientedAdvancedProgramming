@@ -639,8 +639,73 @@ ostream& operator<<(ostream& os, const String& str){
 class Comples{};
 
 {
-    Complex c1(1,2);// -> c1 所占用的空间来自stack，当c1离开scope之后会自动消失。
+    Complex c1(1,2);// -> c1 所占用的空间来自stack，当c1离开scope之后会自动消失。这种作用域内的object，被称为auto object
     Complex *p = new Complex(3); //Complex（3）是个临时对象，其所占用的空间是以new自heap动态分配而得，并由p指向。
 }
+```
+</details></div>
+
+<details><summary>static local objects 的生命周期</summary><div>
+
+```cpp
+{
+    static Complex c2(1,2); // c2 被称为static object，其生命在作用域结束之后仍然存在，直到整个程序结束。
+}
+```
+</details></div>
+
+<details><summary>global objects 的生命周期</summary><div>
+
+```cpp
+class Complex{};
+Complex c3(1,2); //c3 被称为global object，其生命在整个程序结束之后才结束。你也可以把它视为一种static object，其作用域是整个程序。
+
+int main{
+    
+}
+```
+</details></div>
+
+<details><summary>heap objects 的生命周期</summary><div>
+
+```cpp
+class Complex{};
+
+{
+    Complex* p = new Complex;
+
+    delete p;//其生命在这结束
+}//如果没有delete，当离开这个作用域之后这个指针p会自动消亡，但会留下来那块空间
+```
+</details></div>
+
+<details><summary>new：先分配memory，再调用ctor</summary><div>
+
+```cpp
+Complex* pc = new Complex(1,2);
+
+编译器转化为：
+Complex* pc;
+1. void* mem = operator new(sizeof(Complex));//分配内存
+2. pc = static_cast<Complex*>(mem);//转换类型
+3. pc->Complex::complex(1,2);//构造函数
+
+1. -> 其内部调用malloc(n)
+2. -> Complex::Complex(pc, 1,2);
+```
+</details></div>
+
+<details><summary>delete: 先调用dtor，再释放memory</summary><div>
+
+```cpp
+Complex* pc = new Complex(1,2);
+delete pc;
+
+编译器转化为：
+Complex* pc;
+1. Complex::~Complex(pc); //析构函数
+2. operator delete(pc); //释放内存
+
+1. -> 其内部调用free(pc)
 ```
 </details></div>
