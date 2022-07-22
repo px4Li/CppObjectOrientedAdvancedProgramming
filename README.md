@@ -17,12 +17,14 @@
 - [15. operator overloading -2 no member function no this point](#15-operator-overloading--2-no-member-function-no-this-point)
   - [15.1. temp object typename()](#151-temp-object-typename)
 - [16. 复习](#16-复习)
-- [Classes 的两个经典分类](#classes-的两个经典分类)
-  - [String class](#string-class)
-  - [Big Tree](#big-tree)
-  - [ctor和dtor](#ctor和dtor)
-  - [copy construct](#copy-construct)
-  - [copy assignment operator](#copy-assignment-operator)
+- [17. Classes 的两个经典分类](#17-classes-的两个经典分类)
+  - [17.1. String class](#171-string-class)
+  - [17.2. Big Tree](#172-big-tree)
+  - [17.3. ctor和dtor](#173-ctor和dtor)
+  - [17.4. copy construct](#174-copy-construct)
+  - [17.5. copy assignment operator](#175-copy-assignment-operator)
+  - [17.6. output](#176-output)
+- [18. 栈与内存](#18-栈与内存)
 
 ## 1. Object Based vs. Object Oriented
 - Object Based: 面对的是单一class的设计
@@ -499,11 +501,11 @@ inline complex& complex::operator << (ostream& os, const complex& x){
 ```
 </details></div>
 
-## Classes 的两个经典分类
+## 17. Classes 的两个经典分类
 - Class without pointer members
 - Class with pointer members
 
-### String class
+### 17.1. String class
 
 <details><summary>string.h</summary><div>
 
@@ -533,7 +535,7 @@ int main(){
 ```
 </details></div>
 
-### Big Tree
+### 17.2. Big Tree
 <details><summary>三个特殊函数</summary><div>
 class带指针，就本能用默认的拷贝构造函数，应该自己写拷贝构造函数，拷贝赋值函数，析构函数。
 
@@ -554,7 +556,7 @@ private:
 ```
 </details></div>
 
-### ctor和dtor
+### 17.3. ctor和dtor
 <details><summary>构造函数和析构函数</summary><div>
 
 ```cpp
@@ -574,7 +576,7 @@ inline String::~String(){
 ```
 </details></div>
 
-### copy construct
+### 17.4. copy construct
 <details><summary>深拷贝</summary><div>
 
 ```cpp
@@ -591,7 +593,7 @@ inline String::String(const String& str){
 ```
 </details></div>
 
-### copy assignment operator
+### 17.5. copy assignment operator
 <details><summary>拷贝赋值函数</summary><div>
 
 ```cpp
@@ -603,6 +605,42 @@ inline String& String::operator = (const String& str){
     m_data=new char[strlen(str.m_data)+1];
     strcpy(m_data, str.m_data);
     return *this;
+}
+```
+</details></div>
+
+### 17.6. output
+<details><summary>函数output</summary><div>
+
+```cpp
+#include<iostream.h>
+ostream& operator<<(ostream& os, const String& str){
+    os << str.get_c_str();
+    return os;
+}
+```
+```cpp
+{
+    String s1("hello ");
+    cout << s1;
+}
+```
+</details></div>
+
+## 18. 栈与内存
+- stack: 它存在于某作用域（scope）的一块内存空间（memory space）。例如当你调用函数，函数本身即会形成一个stack用来放置它所接收的参数，以及返回地址。
+
+在函数本体（function body）内声明的任何变量，其所使用的内存块都取自上述stack。
+
+- Heap：或称system heap，是指由操作系统提供的一块global内存空间，程序可动态分配（dynamic allocated)从某中获得若干区块（blocks）。
+<details><summary>stack和heap</summary><div>
+
+```cpp
+class Comples{};
+
+{
+    Complex c1(1,2);// -> c1 所占用的空间来自stack，当c1离开scope之后会自动消失。
+    Complex *p = new Complex(3); //Complex（3）是个临时对象，其所占用的空间是以new自heap动态分配而得，并由p指向。
 }
 ```
 </details></div>
