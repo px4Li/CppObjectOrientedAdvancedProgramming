@@ -25,6 +25,9 @@
   - [17.5. copy assignment operator](#175-copy-assignment-operator)
   - [17.6. output](#176-output)
 - [18. 栈与内存](#18-栈与内存)
+  - [18.1. 动态分配所得的内存块（memory block）](#181-动态分配所得的内存块memory-block)
+  - [18.2. 动态分配所得的array](#182-动态分配所得的array)
+  - [18.3. array new 一定要搭配array delete](#183-array-new-一定要搭配array-delete)
 
 ## 1. Object Based vs. Object Oriented
 - Object Based: 面对的是单一class的设计
@@ -686,16 +689,39 @@ Complex* pc = new Complex(1,2);
 
 编译器转化为：
 Complex* pc;
-1. void* mem = operator new(sizeof(Complex));//分配内存
+1. void* mem = operator new(sizeof(Complex));//分配内存, operator new 是一种函数// sizeof(8byte)
 2. pc = static_cast<Complex*>(mem);//转换类型
 3. pc->Complex::complex(1,2);//构造函数
 
 1. -> 其内部调用malloc(n)
-2. -> Complex::Complex(pc, 1,2);
+3. -> Complex::Complex(pc, 1,2); //构造函数是成员函数，所以有this指针
+```
+
+```cpp
+class Complex{
+public:
+// pc 指向一个动态内存空间{double，double}
+    complex(double r = 0, double i = 0):re(r),im(i){} // 3.构造函数
+private:
+    double re;
+    double im;
+};
+```
+
+```cpp
+String* ps = new String("Hello");
+
+String* ps;
+1. void* mem = operator new(sizeof(String));//分配内存
+2. pc = static_cast<String*>(mem);//转换类型
+3. pc->String::String("Hello");//构造函数
+
+1. -> 其内部调用malloc(n)
+3. -> String::String(pc, "Hello");
 ```
 </details></div>
 
-<details><summary>delete: 先调用dtor，再释放memory</summary><div>
+<details><summary>delete: 先调用析构函数，再释放memory</summary><div>
 
 ```cpp
 Complex* pc = new Complex(1,2);
@@ -704,8 +730,29 @@ delete pc;
 编译器转化为：
 Complex* pc;
 1. Complex::~Complex(pc); //析构函数
-2. operator delete(pc); //释放内存
+2. operator delete(pc); //释放内存 //operator delete也是一个特殊函数
 
-1. -> 其内部调用free(pc)
+2. -> 其内部调用free(pc)
+```
+
+```cpp
+class String{
+public:
+    ~String(){delete[] m_data;} // --> 1.析构函数， 2. 删除m_data
+private:
+    char* m_data;
+};
 ```
 </details></div>
+
+### 18.1. 动态分配所得的内存块（memory block）
+
+![dynamic memory block](images/memory_block.png)
+
+### 18.2. 动态分配所得的array
+
+![array dynamic memory block](images/memory_block2.png)
+
+### 18.3. array new 一定要搭配array delete
+
+![new and delete](images/array_new_delete.png)
