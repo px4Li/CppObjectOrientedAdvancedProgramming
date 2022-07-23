@@ -28,6 +28,7 @@
   - [18.1. 动态分配所得的内存块（memory block）](#181-动态分配所得的内存块memory-block)
   - [18.2. 动态分配所得的array](#182-动态分配所得的array)
   - [18.3. array new 一定要搭配array delete](#183-array-new-一定要搭配array-delete)
+  - [复习String类的实现过程](#复习string类的实现过程)
 
 ## 1. Object Based vs. Object Oriented
 - Object Based: 面对的是单一class的设计
@@ -756,3 +757,65 @@ private:
 ### 18.3. array new 一定要搭配array delete
 
 ![new and delete](images/array_new_delete.png)
+
+### 复习String类的实现过程
+<details><summary>String Class</summary><div>
+
+```cpp
+class String{
+public:
+    String(const char* cstr{0});
+    String(const String& str);
+    String& operator= (cosnt String& str);
+    ~String();
+    char* get_c_str() const {return m_data};
+private:
+    char* m_data;
+};
+```
+</div></details>
+
+<details><summary>define construct function</summary><div>
+
+```cpp
+inline String::String(const char* cstr{0}){
+    if(cstr){
+        m_data = new char[strlen(cstr)+1];//+1 is for \0
+        strcpy(m_data, cstr);
+    }
+    else{
+        m_data = new char[1];
+        *m_data = '\0';
+    }
+}
+
+String::~String(){
+    delete[] m_data;
+}
+```
+</div></details>
+
+<details><summary>copy construct function</summary><div>
+
+```cpp
+inline String::String (const String& str){
+    m_data = new char[strlen(str.m_data) + 1];
+    strcpy(m_data, str.m_data);
+}
+```
+</div></details>
+
+<details><summary>copy assignment operator function</summary><div>
+
+```cpp
+inline String& String::operator= (const String& str){
+    if(this == &str){
+        return this;
+    }
+    delete[] m_data;
+    m_data=new char[strlen(str.m_data)+1];
+    strcpy(m_data, str.m_data);
+    return *this;
+}
+```
+</div></details>
