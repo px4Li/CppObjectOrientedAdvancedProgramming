@@ -819,3 +819,107 @@ inline String& String::operator= (const String& str){
 }
 ```
 </div></details>
+
+### 进一步补充：
+
+<details><summary>static expand</summary><div>
+
+```cpp
+class Account{
+public:
+	static double m_rate;//静态数据的声明
+	static void set_rate(const double& ) { m_rate = x;}//静态函数没有this指针，只能处理静态的数据
+};
+double Account::m_rate = 8.0;//静态数据的定义
+
+int main(){
+	Account::set_rate(5.0);//通过class name 调用
+	Account a;
+	a.set_rate(7.0);//通过object 调用
+}
+```
+
+</div></details>
+
+
+<details><summary>Singleton单件模式</summary><div>
+
+```cpp
+class A{
+public:
+    static A& getInstance(return a;);//让外界访问private函数的接口，调用这里面的函数
+    setup(){...}
+private:
+    A();//不让外界创建构造函数的对象
+    A(const A& rhs);
+    static A a; //就只有一个静态对象
+};
+```
+
+</div></details>
+
+<details><summary>Meyers Singleton</summary><div>
+
+```cpp
+class A{
+public:
+    static A& getInstance();
+    setup(){...}
+private:
+    A();
+    A(const A& rhs);
+    ...
+};
+A& A::getInstance(){
+    static A a;//把这个放在函数里的好处在于，只有调用这个函数时才会生成这个静态对象。直至程序结束。
+    return a;
+}
+```
+
+</div></details>
+
+<details><summary>function template</summary><div>
+template
+
+```cpp
+template <class T>
+inline const T& min(const T& a, const T& b){
+	return b < a ? b ： a;
+}
+```
+class
+```cpp
+class stone{
+public:
+	stone (int w, int h, int we):_w(w), _h(h), _weight(we){}
+	bool operator< (const stone& rhs) const {
+		return _weight < rhs._weight;
+	}
+private:
+	int _w, _h, _weight;
+}；
+```
+main
+```cpp
+{
+	stone r1(2,3), r2(4,3), r3;
+	r3 = min(r1, r2);//编译器会对函数模板进行参数推导（argument deduction)所以不用<class>
+}
+```
+
+</div></details>
+
+
+<details><summary>using directive</summary><div>
+
+```cpp
+using namespace std;
+```
+</div></details>
+
+
+<details><summary>using declaration</summary><div>
+
+```cpp
+using std::cout;
+```
