@@ -28,7 +28,14 @@
   - [18.1. 动态分配所得的内存块（memory block）](#181-动态分配所得的内存块memory-block)
   - [18.2. 动态分配所得的array](#182-动态分配所得的array)
   - [18.3. array new 一定要搭配array delete](#183-array-new-一定要搭配array-delete)
-  - [复习String类的实现过程](#复习string类的实现过程)
+  - [18.4. 复习String类的实现过程](#184-复习string类的实现过程)
+  - [18.5. 进一步补充：](#185-进一步补充)
+- [19. Composition, has-a](#19-composition-has-a)
+  - [19.1. 复合关系下的构造和析构](#191-复合关系下的构造和析构)
+- [20. Delegation Composition by reference](#20-delegation-composition-by-reference)
+- [21. Inheritance, is-a](#21-inheritance-is-a)
+  - [21.1. Inheritance关系下的构造和析构](#211-inheritance关系下的构造和析构)
+- [22. Delegation + Inheritance](#22-delegation--inheritance)
 
 ## 1. Object Based vs. Object Oriented
 - Object Based: 面对的是单一class的设计
@@ -758,7 +765,7 @@ private:
 
 ![new and delete](images/array_new_delete.png)
 
-### 复习String类的实现过程
+### 18.4. 复习String类的实现过程
 <details><summary>String Class</summary><div>
 
 ```cpp
@@ -820,7 +827,7 @@ inline String& String::operator= (const String& str){
 ```
 </div></details>
 
-### 进一步补充：
+### 18.5. 进一步补充：
 
 <details><summary>static expand</summary><div>
 
@@ -926,7 +933,7 @@ using std::cout;
 ```
 </div></details>
 
-## Composition, has-a
+## 19. Composition, has-a
 
 <details><summary>复合</summary><div>
 
@@ -949,7 +956,7 @@ public:
 ```
 </div></details>
 
-<details><summary>Adapter Design</summary><div>
+<details><summary>Adapter Method</summary><div>
 queue 拥有 deque，queue的所有功能都让deque来做
 两者的生命周期是一样的。同步。
 queue --> deque
@@ -973,7 +980,7 @@ public:
 ```
 </div></details>
 
-### 复合关系下的构造和析构
+### 19.1. 复合关系下的构造和析构
 
 Container --> Component
 
@@ -991,13 +998,14 @@ Container的析构函数首先执行自己，然后才调用Component的析构�
 ```cpp
 Container::~Container(){ ~Component()};
 ```
-## Delegation Composition by reference
+## 20. Delegation Composition by reference
 
 <details><summary>委托</summary><div>
 用指针相连叫委托
 生命周期不同步。
 String --> StringRep
 String.hpp
+
 ```cpp
 class StringRep;
 class String{
@@ -1011,6 +1019,7 @@ private:
 	StringRep* rep;//point to implimentation(pimpl)即使这里用指针我们也说这是Composition by reference
 };
 ```
+
 String.cpp
 ```cpp
 #include "String.hpp"
@@ -1024,13 +1033,12 @@ class StringRep{
 	};
 }
 String::String(){}
-
 ```
 </div></details>
 
-## Inheritance, is-a
-
+## 21. Inheritance, is-a
 <details><summary>继承</summary><div>
+
 ```cpp
 struct _List_node_base{
 	_List_node_base* _M_next;
@@ -1042,15 +1050,152 @@ template<class _Tp> struct _List_node : public _List_node_base{
 ```
 </div></details>
 
-### Inheritance关系下的构造和析构
+### 21.1. Inheritance关系下的构造和析构
 - 构造由内而外
 Derived的构造函数首先调用Base的default构造函数，然后才执行自己。
+
 ```
 Derived::Derived():Base(){};
 ```
 - 析构由外而内
 Derived的析构函数首先执行自己，然后才调用Base的析构函数。
+
 ```
 Derived::~Derived(){};
 ```
 base class的dtor必须是virtual,否则会出现undefined behavior
+
+## 22. Delegation + Inheritance
+<details><summary>Composite Method</summary><div>
+
+```cpp
+class Primitive: public Component{
+public:
+	Primitive(int val):Component(val){}
+};
+```
+```cpp
+class Compnent{
+int value;
+public:
+	Component(int val){value = val;}
+	virtual void add (Component*){}
+};
+```
+```cpp
+class Composite: public Component{
+	vector<Component*>c;
+public:
+	Composite(int val):Component(val){
+	c.push_back(elem);
+	}
+};
+```
+</div></details>
+
+![prototype method](images/prototype_method.png)
+<details><summary>Prototype Method</summary><div>
+Inherited class
+
+```cpp
+#include <iostream>
+enum imageType{
+LAST, SPOT
+};
+class Image{
+public:
+	virtual void draw() = 0;
+	static Image* findAndClone(imageType);
+protected:
+	virtual imageType returnType() = 0;
+	virtual Image* clone() = 0;
+	// As each subclass of Image is declared, it registers its prototype
+	static void addPrototype(Image* image){
+		_prototypes[_nextSlot++] = image;
+	}
+private:
+	//addPrototype() saves each registered prototype here
+	static Image* _prototypes[10];
+	static int _nextSlot;
+};
+Image* Image::_prototypes[];
+int Image::nextSLot; //definition
+
+```
+```cpp
+//client calls this public static member function when it needs an instance of an image subclass
+Image* Image::findAndClone(imageType type){
+	for(int i{}; i<_nextSlot; i++)
+		if(_prototypes[i]->returnType() == type)
+			return _prototypes[i]->clone();
+}
+
+```
+Derived class
+
+```cpp
+class LandSatImage: public Image{
+public:
+    imageType returnType(){
+        return LSAT;
+    }
+    void draw(){
+        cout << "LandSatImage::draw" << _id << endl;
+    }
+    //When clone() is called, call the one-argument ctor with a dummy
+    Image* clone(){
+        return new LandSatImage(1);
+    }
+protected:
+    //This is only called from clone()
+    LandSatImage(int dummy){
+        _id = _count++;
+    }
+
+private:
+    //Mechanism for initializing an Image subclass - this causes the defult ctor to be called, which registers the subclass's prototype
+    static LandSatImage _landSatImage;
+    // This is only called when the private static data member is inited 
+    LandSatImage(){
+      addPrototype(this);
+    }
+
+    //Nominal "state" per instance mechanism
+    int _id;
+    static int _count;
+};
+//Register the subclass's prototype
+LandSatImage LandSatImage::_landSatImage;
+//Initialize the "state" per instance mechanism
+int LandSatImage::_count = 1;
+
+```
+
+```cpp
+class SpotImage: public Image{
+public:
+    imageType returnType(){
+        return SPOT;
+    }
+    void draw(){
+        cout <<"SpotImage::draw" << endl;
+    }
+    Image* clone(){
+        return new SpotImage(1);
+    }
+protected:
+    SpotImage(int dummy){
+        _id = _count++;
+    }
+private:
+    static SpotImage _spotImage;
+    SpotImage(){
+        addPrototype(this);
+    }
+    int _id;
+    static int _count;
+};
+SpotImage SpotImage::_spotImage;
+int SpotImage::_count = 1;
+```
+</div></details>
