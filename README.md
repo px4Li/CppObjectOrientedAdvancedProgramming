@@ -922,4 +922,135 @@ using namespace std;
 
 ```cpp
 using std::cout;
+
 ```
+</div></details>
+
+## Composition, has-a
+
+<details><summary>复合</summary><div>
+
+```cpp
+template <class T, class Sequence = deque<T>>
+class queue{
+protected:
+	Sequence c;
+public:
+	//以下完全利用c的操作函数完成
+	bool empty()
+	size_type size() const {return c.size();}
+	reference front() {return c.front;}
+	reference back(){return c.back();}
+	//deque 是两端可进出，queue是末端进前端出（先进后出）
+	void push(const value_type& x) {c.push_back(x);}
+	void pop(){c.pop_front();}
+
+};
+```
+</div></details>
+
+<details><summary>Adapter Design</summary><div>
+queue 拥有 deque，queue的所有功能都让deque来做
+两者的生命周期是一样的。同步。
+queue --> deque
+
+```cpp
+template <class T>
+class queue{//容器中拥有另一个deque容器
+protected:
+	deque<T> c;
+public:
+	//以下完全利用c的操作函数完成
+	bool empty()
+	size_type size() const {return c.size();}
+	reference front() {return c.front;}
+	reference back(){return c.back();}
+	//deque 是两端可进出，queue是末端进前端出（先进后出）
+	void push(const value_type& x) {c.push_back(x);}
+	void pop(){c.pop_front();}
+
+};
+```
+</div></details>
+
+### 复合关系下的构造和析构
+
+Container --> Component
+
+- 构造由内而外
+Container的构造函数首先调用Component的default构造函数，然后执行自己。
+
+```cpp
+Container::Container(): Component(){};
+
+```
+
+- 析构由外而内
+Container的析构函数首先执行自己，然后才调用Component的析构函数。
+
+```cpp
+Container::~Container(){ ~Component()};
+```
+## Delegation Composition by reference
+
+<details><summary>委托</summary><div>
+用指针相连叫委托
+生命周期不同步。
+String --> StringRep
+String.hpp
+```cpp
+class StringRep;
+class String{
+public:
+	String();
+	String(const char* s);
+	String(const String& s);
+	String& operator=(const String& s);
+	~String();
+private:
+	StringRep* rep;//point to implimentation(pimpl)即使这里用指针我们也说这是Composition by reference
+};
+```
+String.cpp
+```cpp
+#include "String.hpp"
+namespace{
+class StringRep{
+	friend class String;
+	StringRep(const char* s);
+	~StringRep();
+	int count;
+	char* rep;
+	};
+}
+String::String(){}
+
+```
+</div></details>
+
+## Inheritance, is-a
+
+<details><summary>继承</summary><div>
+```cpp
+struct _List_node_base{
+	_List_node_base* _M_next;
+	_List_node_base* _M_prev;
+};
+template<class _Tp> struct _List_node : public _List_node_base{
+	_Tp _M_data;
+};
+```
+</div></details>
+
+### Inheritance关系下的构造和析构
+- 构造由内而外
+Derived的构造函数首先调用Base的default构造函数，然后才执行自己。
+```
+Derived::Derived():Base(){};
+```
+- 析构由外而内
+Derived的析构函数首先执行自己，然后才调用Base的析构函数。
+```
+Derived::~Derived(){};
+```
+base class的dtor必须是virtual,否则会出现undefined behavior
