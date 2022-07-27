@@ -37,6 +37,9 @@
   - [21.1. Inheritance关系下的构造和析构](#211-inheritance关系下的构造和析构)
 - [22. Delegation + Inheritance](#22-delegation--inheritance)
 - [23. Conversion Function](#23-conversion-function)
+- [non-explicit-one-argument ctor](#non-explicit-one-argument-ctor)
+- [Conversion Function vs. non-explicit-one-argument ctor](#conversion-function-vs-non-explicit-one-argument-ctor)
+- [explicit-one-argument ctor](#explicit-one-argument-ctor)
 
 ## 1. Object Based vs. Object Oriented
 - Object Based: 面对的是单一class的设计
@@ -1208,7 +1211,8 @@ int SpotImage::_count = 1;
 ```cpp
 class Fraction{
 public:
-    Fraction(int num, in den=1): m_numerator(num), m_denominator(den){}
+    Fraction(int num, int den=1)
+    : m_numerator(num), m_denominator(den){}
     operator double() const{
         return (double)(m_numerator / m_denominator);
     }
@@ -1219,6 +1223,78 @@ private:
 ```
 ```cpp
 Fraction f(3,5);
-double d = 4 + f;
+double d = 4 + f;//调用double（）将f转换为0.6 
+```
+</div></details>
+
+## non-explicit-one-argument ctor
+<details><summary>只具有一个实参</summary><div>
+
+```cpp
+class Fraction{
+public:
+    Fraction(int num, int den=1)
+    : m_numerator(num), m_denominator(den){}
+    Fraction operator+(const Fraction& f){
+        return Fraction(...);
+    }
+private:
+    int m_numerator;
+    int m_denominator;
+}；
+```
+```cpp
+Fraction f(3,5);
+double d2 = f + 4; //调用non-explicit ctor将4转换为4/1
+```
+</div></details>
+
+## Conversion Function vs. non-explicit-one-argument ctor
+<details><summary>并存Error</summary><div>
+
+```cpp
+class Fraction{
+public:
+    Fraction(int num, int den=1)
+    : m_numerator(num), m_denominator(den){}
+    operator double() const{
+        return (double)(m_numerator / m_denominator);
+    }
+    Fraction operator+(const Fraction& f){
+        return Fraction(...);
+    }
+private:
+    int m_numerator;
+    int m_denominator;
+}；
+```
+```cpp
+Fraction f(3,5);
+double d2 = f + 4; //Error
+```
+</div></details>
+
+## explicit-one-argument ctor
+<details><summary>并存Error</summary><div>
+
+```cpp
+class Fraction{
+public:
+    explict Fraction(int num, int den=1)
+    : m_numerator(num), m_denominator(den){}
+    operator double() const{
+        return (double)(m_numerator / m_denominator);
+    }
+    Fraction operator+(const Fraction& f){
+        return Fraction(...);
+    }
+private:
+    int m_numerator;
+    int m_denominator;
+}；
+```
+```cpp
+Fraction f(3,5);
+double d2 = f + 4; //Error conversion from double to Fraction
 ```
 </div></details>
