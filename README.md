@@ -1298,3 +1298,62 @@ Fraction f(3,5);
 double d2 = f + 4; //Error conversion from double to Fraction
 ```
 </div></details>
+
+## Pointer-like classes关于智能指针
+
+shared_pt多个指针指向相同的对象。shared_ptr使用引用技术，每一个shared_ptr的拷贝都指向相同的内存。每使用他一次，内部的引用计数加1，每析构一次，内部的引用计数减1，直到减为0时，自动删除所指向的堆内存。shared_ptr内部的引用计数时线程安全的，但是对象的读取需要加锁。
+<details><summary>shared pointer</summary><div>
+
+```cpp
+template<class T>
+class shared_ptr{
+public:
+	T& operator* () const{ return *px;}
+	T* operator-> () const{return px;}
+	shared_ptr(T* p): px(p){}
+private:
+	T* px;// px --> T object
+	long* pn;
+};
+```
+</div></details>
+
+<details><summary>iterator</summary><div>
+```cpp
+template<class T, class Ref, class Ptr>
+struct __list_iterator{
+	typedef __list_iterator<T, Ref, Ptr> self;
+	typedef Ptr pointer;
+	typedef Ref reference;
+	typedef __list_node<T>* link_type;
+	link_type node;
+	bool operator== (const self& x) const {return node==x.node;}
+	bool operator!= (const self& x) const {return node!=x.node;}
+
+	reference operator*() const {return (*node).data;}
+	pointer operator->() const {return &(operator*());}//return &((*node).data)
+
+	self& operator++(){node = (link_type)((*node).next; return node;}
+	self operator++(int){self tmp = *this; return tmp;}
+	self& operator--(){node = (link_type)((*node).perv); return node;}
+	self operator--(int){self tmp = *this; --*this; return tmp;}
+};
+```
+```cpp
+template<class T>
+struct __list_node{
+	void* prev;
+	void* next;
+	T data;
+};
+```
+```cpp
+list<Foo>::iterator ite;
+
+*ite; //获得一个Foo的对象，调用*重载，返回解引用后的node.data的值
+ite->method();//迭代器调用Foo类中的method函数
+	      //相当于（*ite).method();
+             //相当于（&(*ite))->method();
+```
+</div></details>
+
