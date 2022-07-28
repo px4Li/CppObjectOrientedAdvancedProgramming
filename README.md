@@ -1357,3 +1357,32 @@ ite->method();//迭代器调用Foo类中的method函数
 ```
 </div></details>
 
+## Function-like classes仿函数
+<details><summary>仿函数</summary><div>
+
+```cpp
+template <class T>
+struct identity{
+	const T& coperator() (const T& x) const {return x;}
+};
+template<class Pair>
+struct select1st{
+	const typename Pair::first_type& operator()(const Pair& x) const {return x.first;}
+};
+template <class Pair>
+struct select2nd{
+	const typename Pair::second_type& operator() (const Pair& x) const {return x.second;}
+};
+
+```
+```cpp
+template <class T1, class T2>
+struct pair{
+	T1 first;
+	T2 second;
+	pair(): first(T1()), second(T2()){}
+	pair(const T1& a, const T2& b)
+		: first(a), second(b){}
+};
+```
+</div></details>
