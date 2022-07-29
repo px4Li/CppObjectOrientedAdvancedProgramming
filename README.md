@@ -1446,3 +1446,69 @@ Base1* ptr = new Derived1; //up-cast
 shared_ptr<Base1> sptr(new Derived1);
 ```
 </div><details>
+
+## specialization 模板特化
+
+<details><summary>模板特化</summary><div>
+模板泛化
+```cpp
+template<class Key>
+struct hash{};
+
+```
+模板特化
+```cpp
+template<>
+struct hash<char>{
+	size_t operator()(char x) const {return x;}
+};
+
+template<>
+struct has<int>{
+	size_t operator()(int x) const{return x;}
+};
+
+template<>
+struct hash<long>{
+	size_t operator()(long x) const{return x;}
+};
+```
+</div><details>
+
+## partial specialization
+
+<details><summary>个数上偏特化模板</summary><div>
+
+```cpp
+template<typename T, typename Alloc=...>
+class vector{
+...
+};
+```
+```cpp
+
+template<typename Alloc=...>
+class vector<bool, Alloc>{ // T绑定bool
+
+};
+```
+</div></details>
+
+<details><summary>范围上偏特化模板</summary><div>
+```cpp
+template <typename T>
+class C{
+//如果不用指针就用这个模板
+};
+```
+```cpp
+template <typename U>
+class C<U*>{ //如果用指针就用这个模板
+
+};
+```
+```cpp
+C<string> obj1; //使用没有指针的模板
+C<string*> obj2;
+```
+</div></details>
