@@ -1386,3 +1386,63 @@ struct pair{
 };
 ```
 </div></details>
+
+## member template
+<details><summary>成员模板</summary><div>
+```cpp
+template<class T1, class T2>
+struct pair{
+	typedef T1 first_type;
+	typedef T2 second_type;
+	T1 first;
+	T2 second;
+	pair(): first(T1()), second(T2()){}
+	pair(const T1& a, const T2& b): first(a), second(b){}
+
+	template<class U1, class U2>
+	pair(const pair<U1, U2>& p): first(p.first), second(p.second){}
+};
+```
+```cpp
+class fish{};
+class samon: public fish{};
+
+class bird{};
+class chicken: public bird{};
+
+pair<samon, chicken> p;
+pair<fish, bird> p2(p);
+
+pair<fish, bird> p2(pair<samon, chicken>());
+
+```
+```cpp
+template<class T1, class T2>
+struct pair{
+	T1 fish;
+	T2 bird;
+	pair(): fish(T1()), bird(T2()){}
+	pair(const T1& a, const T2& b): fish(a), bird(b){}
+
+	template<class U1, class U2>
+	pair(const pair<U1, U2>& p): fish(p.fish), bird(p.bird){}
+}; 
+```
+
+</div><details>
+
+<details><summary>shared_ptr member template</summary><div>
+```cpp
+template<typename _Tp>
+class shared_ptr: public __shared_ptr<_Tp>{
+	template<typename _Tp1>
+	explicit shared_ptr(_Tp1* __p): __shared_ptr<_Tp>(__p){}
+};
+
+```
+```cpp
+Base1* ptr = new Derived1; //up-cast
+
+shared_ptr<Base1> sptr(new Derived1);
+```
+</div><details>
