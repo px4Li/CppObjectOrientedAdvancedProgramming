@@ -1565,3 +1565,39 @@ hello
 42
 ```
 </div><details>
+
+## reference
+<details><summary>参考</summary><div>
+```cpp
+int x{};//初始化x为0
+int* p = &x; //把x的地址带入p中，而p是一个指向int的指针
+int& r = x; //r代表x。r是一个对x的参考
+int x2 = 6;
+r = x2; //r不能重新代表其他变量。现在改变了r的值，同时也改变了x为5.
+
+```
+</div></details>
+## reference的常见用途
+<detals<summary>常见用途</summary><div>
+```cpp
+void func1(cls* pobj){pobj->xxx();}
+void func2(cls vobj){vobj.xxx();}
+void func3(cls& robj){robj.xxx();}
+
+cls obj;
+func1(&obj);
+func2(obj);
+func3(obj);
+```
+```
+参考通常不用于声明变量，而是用于参数类型和返回类型的描述。
+
+```
+以下被视为“same signature”相同签名，二者不能同时存在：
+```cpp
+double imag(const double& im) {}
+double imag(const double im) ... {}//ambiguity 歧义
+//当调用函数是编译器不知是哪个函数
+//如果在...处加入const,两者则不是相同签名
+```
+</div></details>
