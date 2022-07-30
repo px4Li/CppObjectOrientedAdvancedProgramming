@@ -1512,3 +1512,24 @@ C<string> obj1; //使用没有指针的模板
 C<string*> obj2;
 ```
 </div></details>
+
+
+<details><summary>双模板参数</summary><div>
+```cpp
+template<typename T, template <typename T> class Container>
+class XCLs{
+private:
+	Container<T> c;
+public:
+...
+};
+```
+```cpp
+template<typename T>
+using Lst = list<T, allocate<T>>;
+```
+```cpp
+x XCls<string, list> mylst1;
+o XCls<string, Lst> mylst2;
+```
+</div></details>
