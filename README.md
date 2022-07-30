@@ -1533,3 +1533,35 @@ x XCls<string, list> mylst1;
 o XCls<string, Lst> mylst2;
 ```
 </div></details>
+
+## 确认支持的c++版本
+<details<summary>确认</summary><div>
+```cpp
+#include <iostream>
+int main(){
+	std::cout << __cplusplus << std::endl;
+}
+```
+</div></details>
+
+## variadic templates(since C++11)
+<details><summary>可变模板参数</summary><div>
+```cpp
+void print(){}
+
+template<typename T, typename... Types>
+void print(const T& firstArg, const Types&... args){
+	cout << firstArg << endl;
+	print(args...);
+}
+```
+```cpp
+print(7.5,"hello",bitset<16>(377),42);
+```
+```
+7.5
+hello
+0000000101111001
+42
+```
+</div><details>
