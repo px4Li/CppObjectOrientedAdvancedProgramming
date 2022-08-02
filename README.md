@@ -1578,7 +1578,7 @@ r = x2; //r不能重新代表其他变量。现在改变了r的值，同时也�
 ```
 </div></details>
 ## reference的常见用途
-<detals<summary>常见用途</summary><div>
+<details><summary>常见用途</summary><div>
 ```cpp
 void func1(cls* pobj){pobj->xxx();}
 void func2(cls vobj){vobj.xxx();}
@@ -1599,5 +1599,61 @@ double imag(const double& im) {}
 double imag(const double im) ... {}//ambiguity 歧义
 //当调用函数是编译器不知是哪个函数
 //如果在...处加入const,两者则不是相同签名
+```
+</div></details>
+
+## 接口示例
+
+<details><summary>常见用途</summary><div>
+```cpp
+class Foo{
+public:
+	int _id;
+	long _data;
+	string _str;
+
+public:
+	Foo():_id(0) {
+		cout << "default ctor.this=" << this << "id=" << _id << endl;
+	}
+	Foo(int i):_id(i){
+		cout << "ctor.this=" << this << "id=" << _id << endl;
+	}
+~Foo(){
+	cout << "dtor.this=" << this <<"id=" << _id << endl;
+
+static void* operator new(size_t size);
+static void operator delete(void* pdead, size_t size);
+static void* operator new[](size_t size);
+static void operator delete[](void* pdead, size_t size);
+};
+
+void* Foo::operator new(size_t size){
+	Foo* p=(Foo*)malloc(size);
+	cout << ...
+	return p;
+	}
+void Foo::operator delete(void* pdead, size_t size){
+	cout << ..
+	free(pdead);
+	}
+void* Foo::operator new[](size_t size){
+	Foo* p = (Foo*)malloc(size);
+	cout <<...
+	return p;
+	}
+void Foo::operator delete[](void* pdead, size_t size){
+	cout << ...
+	free(pdead);
+	}
+```
+```cpp
+
+Foo* pf = new Foo;
+delete pf;
+
+//若为成员函数就调用全局globals
+Foo* pf = ::new Foo;// --> void* ::operator new(size_t);
+::delete pf;// --> void ::operator delete(void*);
 ```
 </div></details>
