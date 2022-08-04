@@ -1657,3 +1657,64 @@ Foo* pf = ::new Foo;// --> void* ::operator new(size_t);
 ::delete pf;// --> void ::operator delete(void*);
 ```
 </div></details>
+
+## 重载new(), delete()
+<details><summary></summary><div>
+```
+我们可以重载class member operator new(), 写出多个版本，前提是每一个版本的声明都必须有独特的参数列，其中第一参数必须是size_t,其余参数以new所指定的placement arguments为初值。出现与new(...)小括号内的便是所谓placement arguments。
+Foo* pf = new(300,'c')Foo;
+我们也可以重载class member operator delete(),写出多个版本。但它们绝不会被delete调用。只有当new所调用的ctor抛出excepton，才会调用这些重载版的operator delete()。它只可能这样被调用，主要用来归还未能完全创建成功的object所占用的memory。
+```
+</div></details>
+
+<details><summary>placement new</summary><div>
+```cpp
+class Foo{
+public:
+	Foo(){ cout <<"Foo::Foo()"<<endl; }
+	Foo(int){ cout << "Foo::Foo(int)" << endl; throw Bad();}
+	//(1) 这个就是一般的operator new()的重载
+	void* operator new(size_t size){
+		return malloc(size);
+	}
+
+	//(2)这个就是标准库已提供的placement new()的重载（的形式）所以我也模拟standard placement new, 就只是转回pointer)
+	void* operator new(size_t, void* start){
+		return start;
+	}
+
+	//(3)这个蚕食暂新的placement new
+	void* operator new(size_t size, long extra){
+		return malloc(size+extra);
+	}
+	//(4)这个又是一个placement new
+	void* operator new(size_t size, long extra, char init){
+		return malloc(size+extra);
+	}
+```
+</div></details>
+
+<details><summary>placement delete</summary><div>
+
+```cpp
+//以下是搭配上述placement new的各个所谓placement delete.
+//当ctor发出异常，这儿对应的operator(placement) delete就会被调用。
+//其用途是释放对应之placement new分配所得的memory.
+//(1) 这个就是一般的operator delete()的重载
+void operator delete(void*, size_t){
+	cout <<  "operator delete(void*, size_t)" << endl;
+}
+//(2)对应上一页的（2）
+void operator delete(void*, void*){
+	cout << "operator delete(void*, long)" << endl;
+}
+//(3)这是对应上一页的（3）
+void operator delete(void*, long){
+	cout << "operator delete(void*, long)" << endl;
+}
+//(4)这是对应上一页的（4）
+void operator delete(void*, long, char){
+	cout << "operator delete(void*, long, char) " << endl;
+}
+```
+</div></details>
